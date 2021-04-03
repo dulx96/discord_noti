@@ -6,13 +6,14 @@ declare global {
 }
 
 // Read a url from the environment variables
-const SLACK_WEBHOOK_URL = "http://127.0.0.1:9333/services/T01SLNU34UE/B01SZMTD8LC/ixfNi3IWl4RHNhHW0SgoS4lg";
+const SLACK_WEBHOOK_URL = "http://127.0.0.1:9333/slack/services/T01SLNU34UE/B01SZMTD8LC/ixfNi3IWl4RHNhHW0SgoS4lg";
+const VIBYT_WEBHOOK_URL = "http://127.0.0.1:9333/vybit/vpgobhuhwbg4hk7u";
 
 // Initialize
 
 // const DAY_TIME_URL = "https://discord.com/api/webhooks/826141168877961217/poya_Ecu8ahMm1pAMYupJN82iyVr6dhbMDUVGw5yu8hC36NspTIeIiYN1UR69toH4w2n"
-const VIP: string[] = ["trinhlinh3712", "Lê Xuân Du"]
-// const VIP: string[] = ["vanthucbk","hoangbi"]
+// const VIP: string[] = ["trinhlinh3712", "Lê Xuân Du"]
+const VIP: string[] = ["vanthucbk","hoangbi"]
 async function postData(url = '', data = {}) {
     // Default options are marked with *
     const response = await fetch(url, {
@@ -59,9 +60,12 @@ function watchNewMessage():void {
             const messageId:string = div.id.split("-")[2]
             const messageURL: string | null = baseURI ? baseURI + '/'+  messageId : null
             // * send message
-            const cur_hour:number = new Date().getHours()
-            if(cur_hour >= 0 && cur_hour <= 9 && imageURL && window._alert) {
-                window.open("https://www.youtube.com/watch?v=rwCJvSKzQkc");
+            // * alert important
+            let cur_hour_tz:number = new Date().getUTCHours() + 9
+            cur_hour_tz = cur_hour_tz > 24 ? cur_hour_tz-24 : cur_hour_tz
+            
+            if(cur_hour_tz >= 0 && cur_hour_tz <= 9 && imageURL) {
+                fetch(VIBYT_WEBHOOK_URL);
             }
             // * day time
             // postData(DAY_TIME_URL, {username: lastUser, content: message, embeds: [{description:`[link](${messageURL})`, image: {url: imageURL}}]})
@@ -101,8 +105,6 @@ function watchNewMessage():void {
         } catch(error) {
             await postData(SLACK_WEBHOOK_URL, {text: String(error)})
         }
-        
-        // * emergency 
     }
     const chatBox: HTMLDivElement | null = document.querySelector('[data-list-id="chat-messages"]');
     console.log('init')

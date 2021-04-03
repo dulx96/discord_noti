@@ -78,7 +78,7 @@ async def main():
         url = page.url
         if "https://discord.com/login" in url:
             await login(page, os.environ.get('account'), os.environ.get('password'))
-        with open('scripts/'+item['script'], 'r') as f:
+        with open('dist/'+item['script'], 'r') as f:
             await page.evaluate(f.read())
             print('injected script')
         

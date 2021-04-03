@@ -1,0 +1,1 @@
+(()=>{"use strict";chrome.runtime.onMessage.addListener((function(e){switch(e.type){case"START":console.log("send message"),chrome.runtime.sendMessage(e);break;default:chrome.runtime.sendMessage(e)}}))})();
