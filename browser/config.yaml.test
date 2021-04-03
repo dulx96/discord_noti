@@ -1,0 +1,5 @@
+version: 1
+pages:
+  k2_japan:
+    url: "https://discord.com/channels/744436997111676979/827218529312047105"
+    script: "common.js"

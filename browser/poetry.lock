@@ -42,6 +42,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "python-dotenv"
+version = "0.16.0"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "pyyaml"
 version = "5.4.1"
 description = "YAML parser and emitter for Python"
@@ -60,7 +71,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5d35533b9a233e15299840ef6a2189e2f794fc87fe27e2e4b2af3dfa5d718f2e"
+content-hash = "f2be5269bba5479a3fbd3933a09d1a810a8ba091f4cddf9f85f03297c96ec59b"
 
 [metadata.files]
 aiorun = [
@@ -122,6 +133,10 @@ playwright = [
 pyee = [
     {file = "pyee-8.1.0-py2.py3-none-any.whl", hash = "sha256:383973b63ad7ed5e3c0311f8b179c52981f9e7b3eaea0e9a830d13ec34dde65f"},
     {file = "pyee-8.1.0.tar.gz", hash = "sha256:92dacc5bd2bdb8f95aa8dd2585d47ca1c4840e2adb95ccf90034d64f725bfd31"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.16.0.tar.gz", hash = "sha256:9fa413c37d4652d3fa02fea0ff465c384f5db75eab259c4fc5d0c5b8bf20edd4"},
+    {file = "python_dotenv-0.16.0-py2.py3-none-any.whl", hash = "sha256:31d752f5b748f4e292448c9a0cac6a08ed5e6f4cefab85044462dcad56905cec"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
