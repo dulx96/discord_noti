@@ -6,13 +6,13 @@ import os
 from dotenv import load_dotenv
 import logging
 
-async def login(page:Page, username:str, password:str):
+async def login(page:Page,item, username:str, password:str):
     await page.fill('input[name=email]', username)
     await page.fill('input[type=password]', password)
     await page.keyboard.press('Enter')
     await page.wait_for_load_state('networkidle')
     await asyncio.sleep(10)
-    page.wait_for_selector("[data-list-id='chat-messages']")
+    await page.wait_for_selector("[data-list-id='chat-messages']")
     print('login success')
 
 
@@ -77,7 +77,9 @@ async def main():
         await page.wait_for_load_state('networkidle')
         url = page.url
         if "https://discord.com/login" in url:
-            await login(page, os.environ.get('account'), os.environ.get('password'))
+            await login(page,item, os.environ.get('account'), os.environ.get('password'))
+        await page.wait_for_selector("[data-list-id='chat-messages']")
+        await page.screenshot(path=item['url'].split('/')[-1]+'.png')
         with open('dist/'+item['script'], 'r') as f:
             await page.evaluate(f.read())
             print('injected script')
