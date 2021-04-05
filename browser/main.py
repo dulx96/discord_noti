@@ -68,6 +68,7 @@ async def main():
                    'username': os.environ['PROXY_USER'],
                    'password': os.environ['PROXY_PASS']} if os.environ.get('USE_PROXY', 'false') == 'true' else None)
     browser_context = await browser.new_context(user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36')
+    
     # * process each profile
     for item in config['pages'].values():
         page = await browser_context.new_page()

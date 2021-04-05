@@ -70,7 +70,7 @@ function watchNewMessage():void {
             // * day time
             // postData(DAY_TIME_URL, {username: lastUser, content: message, embeds: [{description:`[link](${messageURL})`, image: {url: imageURL}}]})
             let slack_data:any = {
-                text: message,
+                text: (lastUser?? 'unknownUser') + (message ? ': ' + message : ''),
                 blocks: [
                     {
                         "type": "divider"
