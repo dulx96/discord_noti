@@ -107,12 +107,12 @@ function watchNewMessage():void {
         }
     }
     const chatBox: HTMLDivElement | null = document.querySelector('[data-list-id="chat-messages"]');
-    console.log('init')
-    console.log(chatBox)
-    console.log(VIP)
+    if(chatBox===null) {
+        postData(SLACK_WEBHOOK_URL, {text: "chat box not detected - " + baseURI})  
+    }
     baseURI =  chatBox?.baseURI
     chatBox?.addEventListener('DOMNodeInserted', (e:Event) => {NewMessageProcess(e)} )
-    postData(SLACK_WEBHOOK_URL, {text: "init"})
+    postData(SLACK_WEBHOOK_URL, {text: "init - " + baseURI + ' - ' + VIP})
 }
 
 watchNewMessage()
