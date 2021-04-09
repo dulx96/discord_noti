@@ -1,5 +1,5 @@
 import asyncio
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import async_playwright, Page, Browser
 from aiorun import run
 import yaml
 import os
@@ -16,17 +16,34 @@ async def login(page:Page,item, username:str, password:str):
     print('login success')
 
 
-async def main():
-    # * load config
-    load_dotenv()
-    logging.info('start')
+async def page_init(browser: Browser):
+    # * laod config
     with open(os.environ.get('CONFIG_FILE'),'r') as f:
-        config = yaml.load(f)
-        print(config)
-    # * setup browser
+            config = yaml.load(f)
+            print(config)
+    # * process each profile
+    for item in config['pages'].values():
+        page = await browser.new_page()
+        print(item)
+        await page.goto(item['url'])
+        # * check if page need login
+        await page.wait_for_load_state('networkidle')
+        url = page.url
+        if "https://discord.com/login" in url:
+            await login(page,item, os.environ.get('account'), os.environ.get('password'))
+        await page.wait_for_selector("[data-list-id='chat-messages']")
+        await page.screenshot(path=item['url'].split('/')[-1]+'.png')
+        with open('dist/'+item['script'], 'r') as f:
+            await page.evaluate(f.read())
+
+async def make_browser() -> Browser:
+     # * setup browser
     playwright = await async_playwright().start()
-    browser = await playwright.chromium.launch(headless=True, args=[
-                '--autoplay-policy=user-gesture-required',
+    is_headless = os.environ.get('USE_HEADLESS') != 'false'
+    browser_args = []
+    if is_headless:
+        browser_args = [
+    '--autoplay-policy=user-gesture-required',
     '--disable-background-networking',
     '--disable-background-timer-throttling',
     '--disable-backgrounding-occluded-windows',
@@ -62,27 +79,22 @@ async def main():
     '--password-store=basic',
     '--use-gl=swiftshader',
     '--use-mock-keychain',
-                '--disable-blink-features=AutomationControlled'
-            ],
+    '--disable-blink-features=AutomationControlled'
+            ]
+    # *
+    browser = await playwright.chromium.launch_persistent_context(user_data_dir='browser_data',headless=is_headless, args=browser_args,
+    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
             proxy={'server': os.environ['PROXY'],
                    'username': os.environ['PROXY_USER'],
-                   'password': os.environ['PROXY_PASS']} if os.environ.get('USE_PROXY', 'false') == 'true' else None)
-    browser_context = await browser.new_context(user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36')
-    
-    # * process each profile
-    for item in config['pages'].values():
-        page = await browser_context.new_page()
-        print(item)
-        await page.goto(item['url'])
-        # * check if page need login
-        await page.wait_for_load_state('networkidle')
-        url = page.url
-        if "https://discord.com/login" in url:
-            await login(page,item, os.environ.get('account'), os.environ.get('password'))
-        await page.wait_for_selector("[data-list-id='chat-messages']")
-        await page.screenshot(path=item['url'].split('/')[-1]+'.png')
-        with open('dist/'+item['script'], 'r') as f:
-            await page.evaluate(f.read())
-            print('injected script')
-        
+                   'password': os.environ['PROXY_PASS']} if os.environ.get('USE_PROXY', 'false') == 'true' else None)  
+    return browser
+
+async def main():
+    load_dotenv()
+    logging.info('START')
+    while True:
+        browser = await make_browser()
+        await page_init(browser=browser)
+        await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
+        await browser.close()
 run(main())
