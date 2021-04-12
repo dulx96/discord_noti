@@ -1,10 +1,16 @@
 import asyncio
 from playwright.async_api import async_playwright, Page, Browser
+from playwright._impl._api_types import TimeoutError
 from aiorun import run
 import yaml
 import os
 from dotenv import load_dotenv
 import logging
+import requests
+from tenacity import retry, stop_after_attempt, retry_if_exception_type
+
+SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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";
+VIBYT_WEBHOOK_URL = "https://vybit.net/trigger/vpgobhuhwbg4hk7u";
 
 async def login(page:Page,item, username:str, password:str):
     await page.fill('input[name=email]', username)
@@ -15,26 +21,30 @@ async def login(page:Page,item, username:str, password:str):
     await page.wait_for_selector("[data-list-id='chat-messages']")
     print('login success')
 
-
+@retry(reraise=True, retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(4))
 async def page_init(browser: Browser):
     # * laod config
     with open(os.environ.get('CONFIG_FILE'),'r') as f:
             config = yaml.load(f)
             print(config)
     # * process each profile
-    for item in config['pages'].values():
-        page = await browser.new_page()
-        print(item)
-        await page.goto(item['url'])
-        # * check if page need login
-        await page.wait_for_load_state('networkidle')
-        url = page.url
-        if "https://discord.com/login" in url:
-            await login(page,item, os.environ.get('account'), os.environ.get('password'))
-        await page.wait_for_selector("[data-list-id='chat-messages']")
-        await page.screenshot(path=item['url'].split('/')[-1]+'.png')
-        with open('dist/'+item['script'], 'r') as f:
-            await page.evaluate(f.read())
+    try:
+        for item in config['pages'].values():
+            page = await browser.new_page()
+            print(item)
+            await page.goto(item['url'])
+            # * check if page need login
+            await page.wait_for_load_state('networkidle')
+            url = page.url
+            if "https://discord.com/login" in url:
+                await login(page,item, os.environ.get('account'), os.environ.get('password'))
+            await page.wait_for_selector("[data-list-id='chat-messages']")
+            await page.screenshot(path=item['url'].split('/')[-1]+'.png')
+            with open('dist/'+item['script'], 'r') as f:
+                await page.evaluate(f.read())
+    except Exception as e:
+        await browser.close()
+        raise e
 
 async def make_browser() -> Browser:
      # * setup browser
@@ -92,9 +102,16 @@ async def make_browser() -> Browser:
 async def main():
     load_dotenv()
     logging.info('START')
-    while True:
-        browser = await make_browser()
-        await page_init(browser=browser)
-        await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
-        await browser.close()
+    try:
+        while True:
+            browser = await make_browser()
+            await page_init(browser=browser)
+            await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
+            await browser.close()
+    except Exception as e:
+        logging.error(str(e), exc_info=True)
+        # * noti when got exception
+        requests.post(SLACK_WEBHOOK_URL, json={'text': 'ERROR\n'+ str(e)})
+        requests.get(VIBYT_WEBHOOK_URL)
+        raise e
 run(main())
