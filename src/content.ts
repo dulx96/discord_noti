@@ -6,7 +6,7 @@ declare global {
 }
 
 // Read a url from the environment variables
-const SLACK_WEBHOOK_URL = "http://127.0.0.1:9333/slack/services/T01SLNU34UE/B01SZMTD8LC/ixfNi3IWl4RHNhHW0SgoS4lg";
+const SLACK_WEBHOOK_URL = "http://127.0.0.1:9333/slack/services/T01SLNU34UE/B01TJ85TH9D/EJEopby1XxXCY5v7utjki9II";
 const VIBYT_WEBHOOK_URL = "http://127.0.0.1:9333/vybit/vpgobhuhwbg4hk7u";
 
 // Initialize

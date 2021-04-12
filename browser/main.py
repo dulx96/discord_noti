@@ -9,8 +9,9 @@ import logging
 import requests
 from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
-SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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";
-VIBYT_WEBHOOK_URL = "https://vybit.net/trigger/vpgobhuhwbg4hk7u";
+load_dotenv()
+SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL')
+VIBYT_WEBHOOK_URL = os.environ.get('VIBYT_WEBHOOK_URL')
 
 async def login(page:Page,item, username:str, password:str):
     await page.fill('input[name=email]', username)
@@ -23,7 +24,7 @@ async def login(page:Page,item, username:str, password:str):
 
 @retry(reraise=True, retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(4))
 async def page_init(browser: Browser):
-    # * laod config
+    # * load config
     with open(os.environ.get('CONFIG_FILE'),'r') as f:
             config = yaml.load(f)
             print(config)
@@ -100,7 +101,6 @@ async def make_browser() -> Browser:
     return browser
 
 async def main():
-    load_dotenv()
     logging.info('START')
     try:
         while True:
