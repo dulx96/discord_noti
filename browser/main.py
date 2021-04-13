@@ -1,6 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright, Page, Browser
-from playwright._impl._api_types import TimeoutError
+from playwright._impl._api_types import TimeoutError, Error
 from aiorun import run
 import yaml
 import os
@@ -22,7 +22,7 @@ async def login(page:Page,item, username:str, password:str):
     await page.wait_for_selector("[data-list-id='chat-messages']")
     print('login success')
 
-@retry(reraise=True, retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(4))
+@retry(reraise=True, retry=retry_if_exception_type((TimeoutError,Error)), stop=stop_after_attempt(4))
 async def page_init(browser: Browser):
     # * load config
     with open(os.environ.get('CONFIG_FILE'),'r') as f:
