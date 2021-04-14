@@ -23,28 +23,23 @@ async def login(page:Page,item, username:str, password:str):
     print('login success')
 
 @retry(reraise=True, retry=retry_if_exception_type((TimeoutError,Error)), stop=stop_after_attempt(4))
-async def page_init(browser: Browser):
-    # * load config
-    with open(os.environ.get('CONFIG_FILE'),'r') as f:
-            config = yaml.load(f)
-            print(config)
+async def page_init(browser: Browser, item: dict):
     # * process each profile
     try:
-        for item in config['pages'].values():
-            page = await browser.new_page()
-            print(item)
-            await page.goto(item['url'])
-            # * check if page need login
-            await page.wait_for_load_state('networkidle')
-            url = page.url
-            if "https://discord.com/login" in url:
-                await login(page,item, os.environ.get('account'), os.environ.get('password'))
-            await page.wait_for_selector("[data-list-id='chat-messages']")
-            await page.screenshot(path=item['url'].split('/')[-1]+'.png')
-            with open('dist/'+item['script'], 'r') as f:
-                await page.evaluate(f.read())
+        page = await browser.new_page()
+        print(item)
+        await page.goto(item['url'])
+        # * check if page need login
+        await page.wait_for_load_state('networkidle')
+        url = page.url
+        if "https://discord.com/login" in url:
+            await login(page,item, os.environ.get('account'), os.environ.get('password'))
+        await page.wait_for_selector("[data-list-id='chat-messages']")
+        await page.screenshot(path=item['url'].split('/')[-1]+'.png')
+        with open('dist/'+item['script'], 'r') as f:
+            await page.evaluate(f.read())
     except Exception as e:
-        await browser.close()
+        page.close()
         raise e
 
 async def make_browser() -> Browser:
@@ -105,7 +100,12 @@ async def main():
     try:
         while True:
             browser = await make_browser()
-            await page_init(browser=browser)
+            # * load config
+            with open(os.environ.get('CONFIG_FILE'),'r') as f:
+                    config = yaml.load(f)
+                    print(config)
+            for item in config['pages'].values():
+                await page_init(browser=browser, item=item)
             await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
             await browser.close()
     except Exception as e:
