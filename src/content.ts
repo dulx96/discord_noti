@@ -45,6 +45,12 @@ function watchNewMessage():void {
                 console.log(String(err))
                 return
             }
+
+            // * scroll 
+            const chatBox = document.querySelector('[data-list-id="chat-messages"]')
+            chatBox?.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "end" })
+            chatBox?.firstElementChild?.remove()
+
             
             // * get lastuser sent message
             lastUser = div.querySelector("div > h2 > span > span")?.innerHTML || lastUser

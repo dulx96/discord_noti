@@ -5,3 +5,6 @@ pages:
   k2_japan:
     url: "https://discord.com/channels/744436997111676979/827218529312047105"
     script: "content.js"
+  k2_vn:
+    url: "https://discord.com/channels/760104005145460776/825690828746915840"
+    script: "content.js"

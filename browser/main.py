@@ -28,7 +28,7 @@ async def page_init(browser: Browser, item: dict):
     try:
         page = await browser.new_page()
         print(item)
-        await page.goto(item['url'])
+        await page.goto(item['url'], timeout=120)
         # * check if page need login
         await page.wait_for_load_state('networkidle')
         url = page.url
