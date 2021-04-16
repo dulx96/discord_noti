@@ -6,14 +6,12 @@ declare global {
 }
 
 // Read a url from the environment variables
-const SLACK_WEBHOOK_URL = "http://127.0.0.1:9333/slack/services/T01SLNU34UE/B01TJ85TH9D/EJEopby1XxXCY5v7utjki9II";
-const VIBYT_WEBHOOK_URL = "http://127.0.0.1:9333/vybit/vpgobhuhwbg4hk7u";
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL!
+const VIBYT_WEBHOOK_URL = process.env.VIBYT_WEBHOOK_URL!
 
 // Initialize
 
-// const DAY_TIME_URL = "https://discord.com/api/webhooks/826141168877961217/poya_Ecu8ahMm1pAMYupJN82iyVr6dhbMDUVGw5yu8hC36NspTIeIiYN1UR69toH4w2n"
-// const VIP: string[] = ["trinhlinh3712", "Lê Xuân Du"]
-const VIP: string[] = ["vanthucbk","hoangbi"]
+const VIP: string[] =  process.env.VIPS!.split(',')
 async function postData(url = '', data = {}) {
     // Default options are marked with *
     const response = await fetch(url, {
@@ -48,9 +46,10 @@ function watchNewMessage():void {
 
             // * scroll 
             lastMessageEl.scrollIntoView({ behavior: "smooth", block: "end" })
-            chatBox!.firstElementChild?.remove()
+            // if(messageElList.length > 0) {
+            //     messageElList[1].remove()
 
-            
+            // }            
             // * get lastuser sent message
             lastUser = lastMessageEl.querySelector("div > h2 > span > span")?.innerHTML || lastUser
             // console.log(lastUser)
@@ -121,3 +120,4 @@ function watchNewMessage():void {
 }
 
 watchNewMessage()
+// console.log(process.env.VIPS?.split(','))

@@ -1,6 +1,8 @@
 const webpack = require("webpack");
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const Dotenv = require('dotenv-webpack');
+
 
 const config = {
   entry: {
@@ -70,6 +72,7 @@ const config = {
     new CopyPlugin({
       patterns: [{ from: "public", to: "." }],
     }),
+    new Dotenv()
   ],
 };
 

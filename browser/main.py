@@ -22,7 +22,7 @@ async def login(page:Page,item, username:str, password:str):
     await page.wait_for_selector("[data-list-id='chat-messages']")
     print('login success')
 
-@retry(reraise=True, retry=retry_if_exception_type((TimeoutError,Error)), stop=stop_after_attempt(4))
+@retry(reraise=True, retry=retry_if_exception_type((TimeoutError,Error)), stop=stop_after_attempt(int(os.environ.get('RETRY_TIMES',4))))
 async def page_init(browser: Browser, item: dict):
     # * process each profile
     try:
@@ -39,7 +39,7 @@ async def page_init(browser: Browser, item: dict):
         with open('dist/'+item['script'], 'r') as f:
             await page.evaluate(f.read())
     except Exception as e:
-        page.close()
+        await page.close()
         raise e
 
 async def make_browser() -> Browser:
