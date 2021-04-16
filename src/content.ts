@@ -35,35 +35,34 @@ function watchNewMessage():void {
     window._alert = true
     let lastUser: string | null = null
     let baseURI: string | undefined = undefined
+    let prevLastMessageEl: Element | null = null
     async function NewMessageProcess(node: Event):Promise<void>  {
         try {
-            const div = node.target as HTMLDivElement
-            try {
-                if(div.getAttribute("role") !== "listitem") 
-                    return
-            } catch(err) {
-                console.log(String(err))
+            const chatBox = document.querySelector('[data-list-id="chat-messages"]')
+            const messageElList = chatBox!.querySelectorAll('[role="listitem"]')
+            const lastMessageEl = messageElList[messageElList.length - 1]
+            if(prevLastMessageEl === lastMessageEl) {
                 return
             }
+            prevLastMessageEl = lastMessageEl
 
             // * scroll 
-            const chatBox = document.querySelector('[data-list-id="chat-messages"]')
-            chatBox?.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "end" })
-            chatBox?.firstElementChild?.remove()
+            lastMessageEl.scrollIntoView({ behavior: "smooth", block: "end" })
+            chatBox!.firstElementChild?.remove()
 
             
             // * get lastuser sent message
-            lastUser = div.querySelector("div > h2 > span > span")?.innerHTML || lastUser
-            console.log(lastUser)
+            lastUser = lastMessageEl.querySelector("div > h2 > span > span")?.innerHTML || lastUser
+            // console.log(lastUser)
             // * filter if message from VIP
             if(lastUser && !VIP.includes(lastUser)) 
                 return
             // * get message 
-            const message:string | null | undefined = div.querySelector("div")?.querySelector("div")?.textContent
-            const linkElement:HTMLLinkElement | undefined = div.children[1]?.firstElementChild as HTMLLinkElement
+            const message:string | null | undefined = lastMessageEl.querySelector("div")?.querySelector("div")?.textContent
+            const linkElement:HTMLLinkElement | undefined = lastMessageEl.children[1]?.firstElementChild as HTMLLinkElement
             const imageURL: string | undefined = linkElement?.href
 
-            const messageId:string = div.id.split("-")[2]
+            const messageId:string = lastMessageEl.id.split("-")[2]
             const messageURL: string | null = baseURI ? baseURI + '/'+  messageId : null
             // * send message
             // * alert important
@@ -122,14 +121,3 @@ function watchNewMessage():void {
 }
 
 watchNewMessage()
-// chrome.runtime.onMessage.addListener((message: MessasgeType) => {
-//     console.log('receive message')
-//     switch (message.type) {
-//         case "START":
-//             watchNewMessage()
-//             break;
-//         default:
-//             chrome.runtime.sendMessage(message)
-//             break
-//     }
-// })
