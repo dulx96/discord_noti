@@ -10,7 +10,7 @@ const config = {
     content: path.join(__dirname, "src/content.ts"),
     background: path.join(__dirname, "src/background.ts"),
   },
-  output: { path: path.join(__dirname, "browser/dist"), filename: "[name].js" },
+  output: { path: path.join(__dirname, "../browser/dist"), filename: "[name].js" },
   module: {
     rules: [
       {

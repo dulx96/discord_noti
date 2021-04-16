@@ -32,7 +32,7 @@ ENV PYTHONUNBUFFERED=1 \
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 # Install Chromium dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get clean && apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     libnss3 \
     libxss1 \
@@ -59,18 +59,26 @@ RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poet
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY poetry.lock pyproject.toml ./
+COPY browser/poetry.lock browser/pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-dev
 RUN poetry run python -m playwright install chromium
 
 # install nginx
-COPY install-nginx-debian.sh /
+COPY nginx/install-nginx-debian.sh /
 
 RUN bash /install-nginx-debian.sh
 
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+
+# install node
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get update
+RUN apt-get install -y nodejs npm
+
+
+
 
 FROM builder-base as dev
 WORKDIR $PYSETUP_PATH
@@ -83,4 +91,4 @@ COPY --from=builder-base $PLAYWRIGHT_BROWSERS_PATH $PLAYWRIGHT_BROWSERS_PATH
 
 # will become mountpoint of our code
 WORKDIR /app
-CMD ["/bin/bash", "-c", "service nginx start; python main.py"]
+CMD ["/bin/bash", "-c", "service nginx start; cd js; npm install; npm run build; cd ../browser; python main.py"]
