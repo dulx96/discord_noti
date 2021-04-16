@@ -1,3 +1,4 @@
 .env
 browser_data
 *.png
+dist
