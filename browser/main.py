@@ -1,5 +1,7 @@
 import asyncio
+from typing import Tuple
 from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api._generated import Playwright
 from playwright._impl._api_types import TimeoutError, Error
 from aiorun import run
 import yaml
@@ -42,7 +44,7 @@ async def page_init(browser: Browser, item: dict):
         await page.close()
         raise e
 
-async def make_browser() -> Browser:
+async def make_browser() -> Tuple[Browser, Playwright]:
      # * setup browser
     playwright = await async_playwright().start()
     is_headless = os.environ.get('USE_HEADLESS') != 'false'
@@ -93,13 +95,13 @@ async def make_browser() -> Browser:
             proxy={'server': os.environ['PROXY'],
                    'username': os.environ['PROXY_USER'],
                    'password': os.environ['PROXY_PASS']} if os.environ.get('USE_PROXY', 'false') == 'true' else None)  
-    return browser
+    return browser, playwright
 
 async def main():
     logging.info('START')
     try:
         while True:
-            browser = await make_browser()
+            browser, playwright = await make_browser()
             # * load config
             with open(os.environ.get('CONFIG_FILE'),'r') as f:
                     config = yaml.load(f)
@@ -108,6 +110,7 @@ async def main():
                 await page_init(browser=browser, item=item)
             await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
             await browser.close()
+            await playwright.stop()
     except Exception as e:
         logging.error(str(e), exc_info=True)
         # * noti when got exception

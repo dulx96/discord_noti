@@ -1,6 +1,4 @@
 version: 1
-slack_webhook: "https://hooks.slack.com/services/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"
-vybit_webhook: "https://vybit.net/trigger/vpgobhuhwbg4hk7u"
 pages:
   k2_japan:
     url: "https://discord.com/channels/744436997111676979/827218529312047105"
