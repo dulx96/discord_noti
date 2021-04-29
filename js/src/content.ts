@@ -8,6 +8,8 @@ declare global {
 // Read a url from the environment variables
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL!
 const VIBYT_WEBHOOK_URL = process.env.VIBYT_WEBHOOK_URL!
+let CRITICAL_TIME_START: number | string = process.env.CRITICAL_TIME_START!
+let CRITICAL_TIME_END:number | string = process.env.CRITICAL_TIME_END!
 
 // Initialize
 
@@ -34,6 +36,8 @@ function watchNewMessage():void {
     let lastUser: string | null = null
     let baseURI: string | undefined = undefined
     let prevLastMessageEl: Element | null = null
+    CRITICAL_TIME_START = parseInt(<string>CRITICAL_TIME_START)
+    CRITICAL_TIME_END = parseInt(<string>CRITICAL_TIME_END)
     async function NewMessageProcess(node: Event):Promise<void>  {
         try {
             const chatBox = document.querySelector('[data-list-id="chat-messages"]')
@@ -58,17 +62,16 @@ function watchNewMessage():void {
                 return
             // * get message 
             const message:string | null | undefined = lastMessageEl.querySelector("div")?.querySelector("div")?.textContent
-            const linkElement:HTMLLinkElement | undefined = lastMessageEl.children[1]?.firstElementChild as HTMLLinkElement
+            const linkElement:HTMLLinkElement | null = <HTMLLinkElement> lastMessageEl.querySelector('a > img')?.parentNode
             const imageURL: string | undefined = linkElement?.href
 
             const messageId:string = lastMessageEl.id.split("-")[2]
             const messageURL: string | null = baseURI ? baseURI + '/'+  messageId : null
             // * send message
             // * alert important
-            let cur_hour_tz:number = new Date().getUTCHours() + 9
-            cur_hour_tz = cur_hour_tz > 24 ? cur_hour_tz-24 : cur_hour_tz
-            
-            if(cur_hour_tz >= 0 && cur_hour_tz <= 9 && imageURL) {
+            let cur_hour_utc:number = new Date().getUTCHours()
+            const is_critical_time: boolean = (CRITICAL_TIME_START <= CRITICAL_TIME_END) ? (cur_hour_utc >=CRITICAL_TIME_START && cur_hour_utc <=CRITICAL_TIME_END) : ((cur_hour_utc <=24 && cur_hour_utc >= CRITICAL_TIME_START) || (cur_hour_utc >=0 && cur_hour_utc <=CRITICAL_TIME_END))
+            if(is_critical_time && imageURL) {
                 fetch(VIBYT_WEBHOOK_URL);
             }
             // * day time
@@ -116,7 +119,7 @@ function watchNewMessage():void {
     }
     baseURI =  chatBox?.baseURI
     chatBox?.addEventListener('DOMNodeInserted', (e:Event) => {NewMessageProcess(e)} )
-    postData(SLACK_WEBHOOK_URL, {text: "init - " + baseURI + ' - ' + VIP})
+    postData(SLACK_WEBHOOK_URL, {text: "init - " + baseURI + ' - ' + VIP + ' - ' + 'CRITICAL_TIME' + ` ${CRITICAL_TIME_START}:${CRITICAL_TIME_END}`})
 }
 
 watchNewMessage()
