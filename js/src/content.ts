@@ -62,8 +62,28 @@ function watchNewMessage():void {
                 return
             // * get message 
             const message:string | null | undefined = lastMessageEl.querySelector("div")?.querySelector("div")?.textContent
-            const linkElement:HTMLLinkElement | null = <HTMLLinkElement> lastMessageEl.querySelector('a > img')?.parentNode
-            const imageURL: string | undefined = linkElement?.href
+            
+            // * detect if an image has sent 
+            const wrapImageElement: HTMLAnchorElement | null = lastMessageEl.querySelector('a')
+            // * dectect message is load, now not need yet, anchar is enough
+            // let linkElement:HTMLAnchorElement | null = null
+            // if(wrapImageElement !== null) {
+            //     const checkTime =  10
+            //     let checkedTime = 0
+            //     const timeSleepPerCheck = 500
+            //     while(linkElement !== null) {
+            //         if (wrapImageElement.querySelector('img')) {
+            //             linkElement = wrapImageElement
+            //             break
+            //         }
+            //         checkedTime++
+            //         if(checkedTime > checkTime) {
+            //             break
+            //         }
+            //         await new Promise(r => setTimeout(r,timeSleepPerCheck))
+            //     }
+            // }
+            const imageURL: string | undefined = wrapImageElement?.href
 
             const messageId:string = lastMessageEl.id.split("-")[2]
             const messageURL: string | null = baseURI ? baseURI + '/'+  messageId : null
