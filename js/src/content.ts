@@ -2,7 +2,7 @@
 
 import  {MessasgeType} from './models'
 declare global {
-    interface Window { _alert: any; }
+    interface Window { _alert: any; INIT_NOTI: any }
 }
 
 // Read a url from the environment variables
@@ -139,8 +139,9 @@ function watchNewMessage():void {
     }
     baseURI =  chatBox?.baseURI
     chatBox?.addEventListener('DOMNodeInserted', (e:Event) => {NewMessageProcess(e)} )
-    postData(SLACK_WEBHOOK_URL, {text: "init - " + baseURI + ' - ' + VIP + ' - ' + 'CRITICAL_TIME' + ` ${CRITICAL_TIME_START}:${CRITICAL_TIME_END}`})
+    if(window.INIT_NOTI) {
+        postData(SLACK_WEBHOOK_URL, {text: "init - " + baseURI + ' - ' + VIP + ' - ' + 'CRITICAL_TIME' + ` ${CRITICAL_TIME_START}:${CRITICAL_TIME_END}`})
+    }
 }
 
 watchNewMessage()
-// console.log(process.env.VIPS?.split(','))

@@ -25,7 +25,7 @@ async def login(page:Page,item, username:str, password:str):
     print('login success')
 
 @retry(reraise=True, retry=retry_if_exception_type((TimeoutError,Error)), stop=stop_after_attempt(int(os.environ.get('RETRY_TIMES',4))))
-async def page_init(browser: Browser, item: dict):
+async def page_init(browser: Browser, item: dict, init_noti: int ):
     # * process each profile
     try:
         page = await browser.new_page()
@@ -38,6 +38,7 @@ async def page_init(browser: Browser, item: dict):
             await login(page,item, os.environ.get('account'), os.environ.get('password'))
         await page.wait_for_selector("[data-list-id='chat-messages']")
         await page.screenshot(path=item['url'].split('/')[-1]+'.png')
+        await page.evaluate("window.INIT_NOTI = %s" % init_noti)
         with open('dist/'+item['script'], 'r') as f:
             await page.evaluate(f.read())
     except Exception as e:
@@ -100,6 +101,7 @@ async def make_browser() -> Tuple[Browser, Playwright]:
 async def main():
     logging.info('START')
     try:
+        refresh_time = 0
         while True:
             browser, playwright = await make_browser()
             # * load config
@@ -107,10 +109,11 @@ async def main():
                     config = yaml.load(f)
                     print(config)
             for item in config['pages'].values():
-                await page_init(browser=browser, item=item)
+                await page_init(browser=browser, item=item, init_noti=1 if (refresh_time%(int(os.environ.get('INIT_TIME',10))))==0 else 0)
             await asyncio.sleep(int(os.environ.get('RELOAD_PAGE_AFTER_SECONDS',60*60*2)))
             await browser.close()
             await playwright.stop()
+            refresh_time+=1
     except Exception as e:
         logging.error(str(e), exc_info=True)
         # * noti when got exception
